@@ -1,7 +1,12 @@
 import { SignJWT, jwtVerify } from "jose"
 import { cookies } from "next/headers"
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || "fallback-secret-change-me")
+const jwtSecret = process.env.JWT_SECRET
+if (!jwtSecret) {
+  throw new Error("JWT_SECRET não configurado.")
+}
+
+const secret = new TextEncoder().encode(jwtSecret)
 
 export async function createToken(email: string) {
   const token = await new SignJWT({ email })

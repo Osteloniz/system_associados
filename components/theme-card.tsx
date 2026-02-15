@@ -1,12 +1,12 @@
 import Link from "next/link"
-import { Monitor, Armchair, Heart, Plane, Tag } from "lucide-react"
+import { Monitor, Armchair, Heart, Baby, Tag } from "lucide-react"
 import { formatThemeLabel } from "@/lib/theme"
 
 const themeIcons: Record<string, React.ReactNode> = {
-  "Tecnologia": <Monitor className="h-8 w-8" />,
+  Tecnologia: <Monitor className="h-8 w-8" />,
   "Casa e Escritório": <Armchair className="h-8 w-8" />,
   "Beleza e Saúde": <Heart className="h-8 w-8" />,
-  "Viagem": <Plane className="h-8 w-8" />,
+  "Infantil (Bebês)": <Baby className="h-8 w-8" />,
 }
 
 function getThemeIcon(theme: string) {

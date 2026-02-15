@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
@@ -29,9 +29,9 @@ function slugify(text: string) {
 
 const defaultThemes = [
   "Tecnologia",
-  "Casa e Escritório",
-  "Beleza e Saúde",
-  "Viagem",
+  "Casa e EscritÃ³rio",
+  "Beleza e SaÃºde",
+  "Infantil (Bebês)",
   "Esportes",
   "Moda",
 ]
@@ -105,7 +105,7 @@ export function ProductForm({
 
       if (!res.ok) {
         const data = await res.json()
-        setError(data.error || "Não foi possível salvar o produto.")
+        setError(data.error || "NÃ£o foi possÃ­vel salvar o produto.")
         return
       }
 
@@ -131,7 +131,7 @@ export function ProductForm({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="title" className="text-sm font-medium text-foreground">
-            Título *
+            TÃ­tulo *
           </label>
           <input
             id="title"
@@ -162,7 +162,7 @@ export function ProductForm({
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="description" className="text-sm font-medium text-foreground">
-          Descrição *
+          DescriÃ§Ã£o *
         </label>
         <textarea
           id="description"
@@ -172,13 +172,13 @@ export function ProductForm({
           value={form.description}
           onChange={handleChange}
           className={inputClass}
-          placeholder="Descrição detalhada do produto"
+          placeholder="DescriÃ§Ã£o detalhada do produto"
         />
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="comment" className="text-sm font-medium text-foreground">
-          Comentário (opcional)
+          ComentÃ¡rio (opcional)
         </label>
         <input
           id="comment"
@@ -186,7 +186,7 @@ export function ProductForm({
           value={form.comment}
           onChange={handleChange}
           className={inputClass}
-          placeholder="Comentário sobre o produto"
+          placeholder="ComentÃ¡rio sobre o produto"
         />
       </div>
 
@@ -208,7 +208,7 @@ export function ProductForm({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="price_from" className="text-sm font-medium text-foreground">
-            Preço de (R$) *
+            PreÃ§o de (R$) *
           </label>
           <input
             id="price_from"
@@ -226,7 +226,7 @@ export function ProductForm({
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="price_to" className="text-sm font-medium text-foreground">
-            Preço por (R$) *
+            PreÃ§o por (R$) *
           </label>
           <input
             id="price_to"
@@ -306,7 +306,7 @@ export function ProductForm({
               Salvando...
             </>
           ) : isEditing ? (
-            "Salvar alterações"
+            "Salvar alteraÃ§Ãµes"
           ) : (
             "Criar produto"
           )}
@@ -322,3 +322,4 @@ export function ProductForm({
     </form>
   )
 }
+

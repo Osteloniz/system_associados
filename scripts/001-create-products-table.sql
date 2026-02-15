@@ -26,13 +26,14 @@ VALUES
   ('Smartwatch Fitness Ultra', 'smartwatch-fitness-ultra', 'Relógio inteligente com monitor cardíaco, GPS integrado e resistência à água até 50 metros.', 'Ideal para quem pratica esportes!', 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=400&fit=crop', 599.90, 349.90, 'https://example.com/affiliate/smartwatch-ultra', 'Tecnologia', true),
   ('Cadeira Gamer Ergo Plus', 'cadeira-gamer-ergo-plus', 'Cadeira gamer ergonômica com suporte lombar ajustável, apoio de braço 4D e revestimento em couro PU premium.', 'Conforto para longas horas de trabalho ou jogo!', 'https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=600&h=400&fit=crop', 1299.90, 799.90, 'https://example.com/affiliate/cadeira-ergo', 'Casa e Escritório', true),
   ('Kit Skincare Completo', 'kit-skincare-completo', 'Kit completo de cuidados com a pele incluindo limpeza, tonificação e hidratação. Produtos naturais e veganos.', 'Resultados visíveis em 2 semanas!', 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600&h=400&fit=crop', 189.90, 99.90, 'https://example.com/affiliate/skincare-kit', 'Beleza e Saúde', true),
-  ('Mochila Viagem Expansível', 'mochila-viagem-expandivel', 'Mochila de viagem com compartimento expansível, porta USB e organizador interno. Perfeita para viagens curtas.', 'Aprovada como bagagem de mão!', 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=400&fit=crop', 249.90, 159.90, 'https://example.com/affiliate/mochila-viagem', 'Viagem', true),
+  ('Kit Primeiros Cuidados para Bebês', 'kit-primeiros-cuidados-bebes', 'Kit com itens essenciais para os primeiros cuidados do bebê: fraldas, lenços, pomada e acessórios para higiene diária.', 'Seleção prática para o dia a dia dos pais.', 'https://images.unsplash.com/photo-1515488764276-beab7607c1e6?w=600&h=400&fit=crop', 279.90, 189.90, 'https://example.com/affiliate/kit-bebe', 'Infantil (Bebês)', true),
   ('Luminária LED Inteligente', 'luminaria-led-inteligente', 'Luminária de mesa com controle de temperatura de cor, dimmer touch e conexão Wi-Fi para controle por app.', NULL, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop', 199.90, 129.90, 'https://example.com/affiliate/luminaria-led', 'Casa e Escritório', true)
 ON CONFLICT (slug) DO NOTHING;
 
 -- Correções para ambientes com dados legados sem acentuação
 UPDATE products SET theme = 'Casa e Escritório' WHERE theme = 'Casa e Escritorio';
 UPDATE products SET theme = 'Beleza e Saúde' WHERE theme = 'Beleza e Saude';
+UPDATE products SET theme = 'Infantil (Bebês)' WHERE theme = 'Viagem';
 
 UPDATE products
 SET description = 'Fone de ouvido sem fio com cancelamento de ruído ativo e bateria de 40 horas. Qualidade de som premium com graves profundos.',
@@ -54,11 +55,33 @@ SET description = 'Kit completo de cuidados com a pele incluindo limpeza, tonifi
     comment = 'Resultados visíveis em 2 semanas!'
 WHERE slug = 'kit-skincare-completo';
 
+-- Migração do exemplo antigo de viagem para o exemplo infantil
 UPDATE products
-SET title = 'Mochila Viagem Expansível',
-    description = 'Mochila de viagem com compartimento expansível, porta USB e organizador interno. Perfeita para viagens curtas.',
-    comment = 'Aprovada como bagagem de mão!'
-WHERE slug = 'mochila-viagem-expandivel';
+SET title = 'Kit Primeiros Cuidados para Bebês',
+    slug = 'kit-primeiros-cuidados-bebes',
+    description = 'Kit com itens essenciais para os primeiros cuidados do bebê: fraldas, lenços, pomada e acessórios para higiene diária.',
+    comment = 'Seleção prática para o dia a dia dos pais.',
+    affiliate_link = 'https://example.com/affiliate/kit-bebe',
+    theme = 'Infantil (Bebês)'
+WHERE slug = 'mochila-viagem-expandivel'
+  AND NOT EXISTS (
+    SELECT 1 FROM products WHERE slug = 'kit-primeiros-cuidados-bebes'
+  );
+
+UPDATE products
+SET title = 'Kit Primeiros Cuidados para Bebês',
+    description = 'Kit com itens essenciais para os primeiros cuidados do bebê: fraldas, lenços, pomada e acessórios para higiene diária.',
+    comment = 'Seleção prática para o dia a dia dos pais.',
+    affiliate_link = 'https://example.com/affiliate/kit-bebe',
+    theme = 'Infantil (Bebês)'
+WHERE slug = 'kit-primeiros-cuidados-bebes';
+
+UPDATE products
+SET active = false
+WHERE slug = 'mochila-viagem-expandivel'
+  AND EXISTS (
+    SELECT 1 FROM products WHERE slug = 'kit-primeiros-cuidados-bebes'
+  );
 
 UPDATE products
 SET title = 'Luminária LED Inteligente',

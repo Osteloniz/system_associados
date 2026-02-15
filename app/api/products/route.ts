@@ -6,12 +6,16 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const theme = searchParams.get("theme")
-    const all = searchParams.get("all") // for admin - include inactive
+    const all = searchParams.get("all")
 
     let products
     if (theme) {
       products = await sql`SELECT * FROM products WHERE theme = ${theme} AND active = true ORDER BY created_at DESC`
     } else if (all === "true") {
+      const session = await getSession()
+      if (!session) {
+        return NextResponse.json({ error: "Não autorizado." }, { status: 401 })
+      }
       products = await sql`SELECT * FROM products ORDER BY created_at DESC`
     } else {
       products = await sql`SELECT * FROM products WHERE active = true ORDER BY created_at DESC`
