@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { sql } from "@/lib/db"
 import type { Product } from "@/lib/db"
 import { formatThemeLabel } from "@/lib/theme"
+import { getSession } from "@/lib/auth"
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -20,6 +21,11 @@ function escapeHtml(text: string) {
 
 export async function GET() {
   try {
+    const session = await getSession()
+    if (!session) {
+      return NextResponse.json({ error: "Não autorizado." }, { status: 401 })
+    }
+
     const products = (await sql`SELECT * FROM products WHERE active = true ORDER BY theme ASC, title ASC`) as Product[]
 
     // Group by theme

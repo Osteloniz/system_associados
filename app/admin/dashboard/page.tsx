@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import useSWR from "swr"
 import { AdminHeader } from "@/components/admin-header"
 import { ProductForm } from "@/components/product-form"
@@ -14,6 +14,8 @@ import {
   Search,
   Package,
   FileDown,
+  FileSpreadsheet,
+  FileUp,
 } from "lucide-react"
 import Image from "next/image"
 import type { Product } from "@/lib/db"
@@ -37,6 +39,8 @@ export default function AdminDashboardPage() {
   const [editingProduct, setEditingProduct] = useState<Product | undefined>()
   const [search, setSearch] = useState("")
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [importing, setImporting] = useState(false)
+  const importInputRef = useRef<HTMLInputElement | null>(null)
 
   const searchTerm = search.toLowerCase()
 
@@ -82,6 +86,50 @@ export default function AdminDashboardPage() {
     }
   }
 
+  function handleOpenImport() {
+    if (importing) return
+    importInputRef.current?.click()
+  }
+
+  async function handleImportFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ""
+    if (!file) return
+
+    setImporting(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch("/api/products/import-csv", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast.error(data.error || "Falha ao importar CSV")
+        return
+      }
+
+      mutate()
+
+      if (data.errorCount > 0) {
+        toast.success(
+          `Importação concluída: ${data.imported} itens importados, ${data.errorCount} linha(s) com erro.`
+        )
+      } else {
+        toast.success(`Importação concluída: ${data.imported} itens importados.`)
+      }
+    } catch {
+      toast.error("Falha ao importar CSV")
+    } finally {
+      setImporting(false)
+    }
+  }
+
   function handleFormSuccess() {
     setShowForm(false)
     setEditingProduct(undefined)
@@ -124,8 +172,30 @@ export default function AdminDashboardPage() {
                   className="flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   <FileDown className="h-4 w-4" />
-                  Exportar
+                  PDF
                 </a>
+                <a
+                  href="/api/products/export-csv"
+                  className="flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  CSV
+                </a>
+                <a
+                  href="/api/products/export-template"
+                  className="flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Modelo CSV
+                </a>
+                <button
+                  onClick={handleOpenImport}
+                  disabled={importing}
+                  className="flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+                >
+                  <FileUp className="h-4 w-4" />
+                  {importing ? "Importando..." : "Importar CSV"}
+                </button>
                 <button
                   onClick={() => {
                     setEditingProduct(undefined)
@@ -136,6 +206,13 @@ export default function AdminDashboardPage() {
                   <Plus className="h-4 w-4" />
                   Novo produto
                 </button>
+                <input
+                  ref={importInputRef}
+                  type="file"
+                  accept=".csv,text/csv"
+                  onChange={handleImportFile}
+                  className="hidden"
+                />
               </div>
             )}
           </div>

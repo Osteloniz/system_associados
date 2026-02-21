@@ -2,7 +2,7 @@
 
 Catálogo de produtos afiliados com vitrine pública e painel administrativo para gestão de itens, categorias e links.
 
-## Visão Geral
+## Visão geral
 
 O **Seleto** é uma aplicação web construída com Next.js (App Router) para publicar ofertas de produtos afiliados.
 
@@ -16,7 +16,8 @@ Você tem:
   - login protegido por cookie JWT;
   - CRUD de produtos;
   - ativação/desativação de produtos;
-  - exportação de catálogo.
+  - importação em lote por CSV;
+  - exportação de catálogo (CSV e PDF).
 
 ## Stack
 
@@ -35,7 +36,7 @@ Você tem:
 - Banco PostgreSQL
 - Cliente `psql` (para executar o script SQL)
 
-## Instalação (Local)
+## Instalação local
 
 ### 1. Instalar dependências
 
@@ -57,13 +58,13 @@ ADMIN_PASSWORD_HASH="\$2a\$10\$..."
 
 ### 3. Gerar hash da senha do admin
 
-#### Para usar no `.env.local` (com escape de `$`)
+Para usar no `.env.local` (com escape de `$`):
 
 ```bash
 node -e "const bcrypt=require('bcryptjs');const h=bcrypt.hashSync('SuaSenhaForte123!',10);console.log(h.replace(/\$/g,'\\$'));"
 ```
 
-#### Para usar na Vercel (valor normal, sem escape)
+Para usar na Vercel (valor normal, sem escape):
 
 ```bash
 node -e "const bcrypt=require('bcryptjs');console.log(bcrypt.hashSync('SuaSenhaForte123!',10));"
@@ -91,11 +92,40 @@ pnpm dev
 
 Abra: `http://localhost:3000`
 
-## Login Admin
+## Login admin
 
 - URL: `http://localhost:3000/admin/login`
 - E-mail: valor de `ADMIN_EMAIL`
-- Senha: a senha em texto que você usou para gerar `ADMIN_PASSWORD_HASH`
+- Senha: a senha em texto usada para gerar `ADMIN_PASSWORD_HASH`
+
+## Importação em lote (CSV)
+
+Fluxo recomendado para cadastro inicial:
+
+1. Acesse `http://localhost:3000/admin/dashboard`.
+2. Clique em **Modelo CSV** para baixar o arquivo de exemplo.
+3. Preencha os produtos na planilha.
+4. Clique em **Importar CSV** e selecione o arquivo.
+
+### Regras do CSV
+
+- Cabeçalhos esperados:
+  - `title`
+  - `slug`
+  - `description`
+  - `comment`
+  - `image_url`
+  - `price_from`
+  - `price_to`
+  - `affiliate_link`
+  - `theme`
+  - `active`
+- O import aceita CSV com separador `,` ou `;` (compatível com Excel PT-BR).
+- Coluna `active` aceita: `true/false`, `1/0`, `sim/não`.
+- O import faz **upsert por `slug`**:
+  - se o slug já existir, atualiza o produto;
+  - se não existir, cria um novo produto.
+- Linhas inválidas retornam erro com número da linha para correção rápida.
 
 ## Scripts
 
@@ -103,16 +133,17 @@ Abra: `http://localhost:3000`
 pnpm dev     # ambiente de desenvolvimento
 pnpm build   # build de produção
 pnpm start   # sobe build de produção
-pnpm lint    # lint (se configurado no Next)
+pnpm lint    # lint
 ```
 
-## Rotas Principais
+## Rotas principais
 
 ### Públicas
 
 - `/`
 - `/catalogo/[tema]`
 - `/produto/[slug]`
+- `/p/[slug]`
 
 ### Admin
 
@@ -130,6 +161,9 @@ pnpm lint    # lint (se configurado no Next)
 - `PATCH /api/products/[id]`
 - `DELETE /api/products/[id]`
 - `GET /api/products/export-pdf`
+- `GET /api/products/export-csv`
+- `GET /api/products/export-template`
+- `POST /api/products/import-csv`
 
 ## Deploy na Vercel
 
@@ -142,6 +176,15 @@ pnpm lint    # lint (se configurado no Next)
    - `ADMIN_PASSWORD_HASH`
 4. Faça o deploy.
 5. Execute o script SQL no banco de produção (`scripts/001-create-products-table.sql`).
+6. Valide login no `/admin/login` e importação de um CSV teste.
+
+## Segurança
+
+- Nunca versione `.env.local`.
+- Em produção, use `JWT_SECRET` forte e exclusivo.
+- Login admin com limite de tentativas (rate limit).
+- Rotas administrativas e de export/import protegidas por sessão.
+- Revogue e gere novos segredos se algum valor sensível for exposto.
 
 ## Troubleshooting
 
@@ -166,9 +209,3 @@ git commit -m "feat: setup inicial"
 git branch -M main
 git push -u origin main
 ```
-
-## Segurança
-
-- Nunca versione `.env.local`.
-- Revogue e gere novos segredos se algum valor sensível for exposto.
-- Em produção, use `JWT_SECRET` forte e único.
